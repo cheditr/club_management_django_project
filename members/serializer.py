@@ -33,7 +33,14 @@ class MemberSerializer(ModelSerializer):
         member = Member.objects.create(user=user, **validated_data)
         return member
 
+#serializer pour l'utiliser dans la table cotisation
+class MemberMinimalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Member
+        fields = ["id_membre", "full_name", "email"]  # Champs uniquement en lecture
+
 class CotisationSerializer(ModelSerializer):
+    membre = MemberMinimalSerializer(read_only=True)
     class Meta:
         model = Cotisation
         fields = ["id_cotisation","membre","montant","statut","annee_academique"]

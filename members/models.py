@@ -9,8 +9,7 @@ class Member(models.Model):
     full_name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
     departement = models.CharField(max_length=100)
-    annee_etude = models.IntegerField() # 1 ou 2 ou 3
-    statut_adhesion = models.BooleanField(default=False)  
+    annee_etude = models.IntegerField() # 1 ou 2 ou 3 
     date_inscription = models.DateField(auto_now_add=True)
 
 class Cotisation(models.Model):

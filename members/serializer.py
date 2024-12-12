@@ -5,15 +5,15 @@ from django.contrib.auth.models import User
 
 #serializer for member
 class MemberSerializer(ModelSerializer):
-    # Champs supplémentaires pour l'utilisateur
-    username = serializers.CharField(write_only=True, required=True)
-    password = serializers.CharField(write_only=True, required=True)
+    # Champs supplémentaires pour l'utilisateur lors de la création
+    username = serializers.CharField(write_only=True, required=False)
+    password = serializers.CharField(write_only=True, required=False)
 
     class Meta:
         model = Member
         fields = [
-            "username",  # Champ lié au modèle User
-            "password",  # Champ lié au modèle User
+            "username",  # Champ lié au modèle User (optionnel pour la mise à jour)
+            "password",  # Champ lié au modèle User (optionnel pour la mise à jour)
             "full_name",
             "email",
             "departement",
@@ -32,6 +32,15 @@ class MemberSerializer(ModelSerializer):
         # Créer le membre et le lier à l'utilisateur
         member = Member.objects.create(user=user, **validated_data)
         return member
+
+    def update(self, instance, validated_data):
+        # Mise à jour des champs du modèle Member uniquement
+        instance.full_name = validated_data.get("full_name", instance.full_name)
+        instance.email = validated_data.get("email", instance.email)
+        instance.departement = validated_data.get("departement", instance.departement)
+        instance.annee_etude = validated_data.get("annee_etude", instance.annee_etude)
+        instance.save()
+        return instance
 
 #serializer pour l'utiliser dans la table cotisation
 class MemberMinimalSerializer(serializers.ModelSerializer):

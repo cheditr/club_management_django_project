@@ -4,11 +4,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Evenement
-from members.models import Member
+from members.models import Member,Cotisation
 from .serializer import EvenementSerializer
 from rest_framework.permissions import IsAdminUser,IsAuthenticated,AllowAny
 import csv
 from django.http import HttpResponse
+from datetime import date
 
 
 # Create your views here.
@@ -58,9 +59,28 @@ class InscriptionEvenementView(APIView):
         except Evenement.DoesNotExist:
             return Response({"error": "Événement non trouvé."}, status=status.HTTP_404_NOT_FOUND)
 
+
         # Vérifier si le membre a réglé sa cotisation
-        if not membre.statut_adhesion:
-            return Response({"error": "Votre cotisation n'est pas réglée."}, status=status.HTTP_403_FORBIDDEN)
+
+        # Calculer l'année académique actuelle
+        today = date.today()
+        if today.month >= 9:  # De septembre à décembre
+            annee_academique = f"{today.year}-{today.year + 1}"
+        else:  # De janvier à août
+            annee_academique = f"{today.year - 1}-{today.year}"
+
+        # Vérifier si le membre a une cotisation payée pour l'année académique actuelle
+        cotisation_payee = Cotisation.objects.filter(
+            membre=membre,
+            statut=True,
+            annee_academique=annee_academique
+        ).exists()
+
+        if not cotisation_payee:
+            return Response(
+                {"error": "Votre cotisation pour l'année académique en cours n'est pas réglée."},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
         # Ajouter le membre comme participant s'il n'est pas déjà inscrit
         if membre in evenement.participants.all():
